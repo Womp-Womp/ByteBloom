@@ -1,0 +1,11 @@
+[package]
+name = "bytebloom_gardens"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.0", features = ["derive"] }
+crossterm = "0.25"
+ratatui = { version = "0.21", features = ["all-widgets"] }
+rusqlite = { version = "0.28", features = ["bundled"] }
+serde = { version = "1.0", features = ["derive"] }
