@@ -78,7 +78,9 @@ pub fn run_game_tick(state: &mut MainGameState) {
             for tile in row.iter_mut() {
                 if let Some(plant) = &mut tile.plant {
                     plant.age += 1;
-                    if plant.age >= plant.maturity_age {
+                    if plant.age >= plant.wither_time {
+                        plant.life_cycle_stage = plant::LifeCycleStage::Withering;
+                    } else if plant.age >= plant.maturity_age {
                         plant.life_cycle_stage = plant::LifeCycleStage::Mature;
                     }
                 }
