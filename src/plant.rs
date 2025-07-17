@@ -15,8 +15,8 @@ pub struct Plant {
 pub struct PlantGenetics {
     pub growth_time: u32,
     pub yield_range: (u32, u32),
-    pub water_req: f32,
-    pub nutrient_drain: (f32, f32, f32),
+    pub ideal_moisture_range: (f32, f32),
+    pub nutrient_consumption: (f32, f32, f32),
     pub light_req: f32,
     pub pest_resistance: f32,
     pub disease_resistance: f32,
@@ -40,8 +40,8 @@ pub fn create_plant(species: &str) -> Plant {
         genetics: PlantGenetics {
             growth_time: 10,
             yield_range: (1, 5),
-            water_req: 5.0,
-            nutrient_drain: (0.1, 0.1, 0.1),
+            ideal_moisture_range: (0.4, 0.6),
+            nutrient_consumption: (0.1, 0.1, 0.1),
             light_req: 5.0,
             pest_resistance: 0.1,
             disease_resistance: 0.1,
