@@ -17,6 +17,7 @@ pub fn new_game() -> MainGameState {
     MainGameState {
         plots,
         tick_counter: 0,
+        inventory: HashMap::new(),
     }
 }
 
@@ -38,6 +39,30 @@ pub fn plant_seed(game_state: &mut MainGameState, x: u32, y: u32, seed: &str) {
 
 pub fn init_game() -> MainGameState {
     new_game()
+}
+
+use rand::Rng;
+
+pub fn harvest(game_state: &mut MainGameState, x: u32, y: u32) {
+    if let Some(plot) = game_state.plots.get_mut(&(0, 0)) {
+        if let Some(tile) = plot.grid.tiles.get_mut(y as usize).and_then(|row| row.get_mut(x as usize)) {
+            if let Some(plant) = &tile.plant {
+                if plant.life_cycle_stage == plant::LifeCycleStage::Mature {
+                    let yield_amount = rand::thread_rng().gen_range(plant.genetics.yield_range.0..=plant.genetics.yield_range.1);
+                    println!("Harvested {} of {} from ({}, {})", yield_amount, plant.species, x, y);
+                    let entry = game_state.inventory.entry(plant.species.clone()).or_insert(0);
+                    *entry += yield_amount;
+                    tile.plant = None;
+                } else {
+                    println!("The plant at ({}, {}) is not mature enough to be harvested.", x, y);
+                }
+            } else {
+                println!("There is no plant at ({}, {})", x, y);
+            }
+        } else {
+            println!("Invalid coordinates: ({}, {})", x, y);
+        }
+    }
 }
 
 pub fn run_game_tick(state: &mut MainGameState) {

@@ -42,6 +42,11 @@ pub enum Commands {
         x: u32,
         y: u32,
     },
+    /// Harvests a mature plant
+    Harvest {
+        x: u32,
+        y: u32,
+    },
     /// Shows market prices
     Market,
 }
