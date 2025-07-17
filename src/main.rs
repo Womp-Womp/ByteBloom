@@ -8,6 +8,7 @@ mod plant;
 mod saveload;
 mod tui;
 mod tests;
+mod weather;
 
 fn main() {
     println!("Hello from ByteBloom Gardens!");
@@ -140,6 +141,9 @@ fn handle_command(command: cli::Commands, game_state: &mut garden::MainGameState
         }
         cli::Commands::Harvest { x, y } => {
             engine::harvest(game_state, x, y);
+        }
+        cli::Commands::Forecast { ticks } => {
+            engine::forecast(game_state, ticks);
         }
         cli::Commands::Market(market_command) => match market_command.command {
             cli::MarketCommands::Buy { item, quantity } => {

@@ -55,6 +55,10 @@ pub enum Commands {
         y: u32,
     },
     Market(MarketCommand),
+    Forecast {
+        /// The number of ticks to forecast
+        ticks: u64,
+    },
 }
 
 #[derive(Parser, Debug)]

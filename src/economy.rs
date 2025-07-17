@@ -106,10 +106,3 @@ pub fn view_market(market: &Market) -> String {
     market_view
 }
 
-pub fn buy_stock(_ticker: &str, _amount: u32) {
-    // Placeholder for stock buying logic
-}
-
-pub fn sell_stock(_ticker: &str, _amount: u32) {
-    // Placeholder for stock selling logic
-}

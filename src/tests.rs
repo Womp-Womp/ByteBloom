@@ -2,7 +2,6 @@
 mod tests {
     use crate::engine::{new_game, plant_seed, run_game_tick};
     use crate::garden::{Grid, MainGameState, Nutrients, Soil, SoilType, Tile};
-    use crate::plant::{LifeCycleStage};
 
     fn setup_test_game() -> MainGameState {
         let mut game = new_game();
