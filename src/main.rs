@@ -7,6 +7,7 @@ mod garden;
 mod plant;
 mod saveload;
 mod tui;
+mod tests;
 
 fn main() {
     println!("Hello from ByteBloom Gardens!");
@@ -59,6 +60,9 @@ fn main() {
             engine::plant_seed(&mut game_state, x, y, &seed);
             // Consider saving the game here automatically if that's desired.
             // saveload::save_game(&game_state, "default_save.json").unwrap();
+        }
+        cli::Commands::Harvest { x, y } => {
+            engine::harvest(&mut game_state, x, y);
         }
 
         // All other commands fall through. `Save` is already handled.
