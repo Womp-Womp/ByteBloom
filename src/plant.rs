@@ -1,11 +1,16 @@
 // src/plant.rs
+use serde::{Deserialize, Serialize};
 
+#[derive(Serialize, Deserialize)]
 pub struct Plant {
     pub species: String,
     pub genetics: PlantGenetics,
     pub life_cycle_stage: LifeCycleStage,
+    pub age: u32,
+    pub maturity_age: u32,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct PlantGenetics {
     pub growth_time: u32,
     pub yield_range: (u32, u32),
@@ -17,6 +22,7 @@ pub struct PlantGenetics {
     pub genetic_stability: f32,
 }
 
+#[derive(Serialize, Deserialize, PartialEq, Debug)]
 pub enum LifeCycleStage {
     Seed,
     Sprout,
@@ -41,5 +47,7 @@ pub fn create_plant(species: &str) -> Plant {
             genetic_stability: 0.9,
         },
         life_cycle_stage: LifeCycleStage::Seed,
+        age: 0,
+        maturity_age: 10,
     }
 }

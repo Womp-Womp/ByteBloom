@@ -3,8 +3,6 @@
 use crate::garden::{create_grid, MainGameState, Plot};
 use crate::plant;
 use std::collections::HashMap;
-use std::fs;
-use std::io;
 
 pub fn new_game() -> MainGameState {
     let mut plots = HashMap::new();
@@ -19,6 +17,7 @@ pub fn new_game() -> MainGameState {
     MainGameState {
         plots,
         tick_counter: 0,
+    }
 }
 
 pub fn plant_seed(game_state: &mut MainGameState, x: u32, y: u32, seed: &str) {
@@ -37,24 +36,23 @@ pub fn plant_seed(game_state: &mut MainGameState, x: u32, y: u32, seed: &str) {
     }
 }
 
-pub fn save_game(game_state: &MainGameState) -> io::Result<()> {
-    // In a real game, you'd serialize the game state to a file.
-    // For now, we'll just pretend to save.
-    fs::write("savegame.dat", "This is a fake save file.")?;
-    Ok(())
-}
-
-pub fn load_game() -> io::Result<MainGameState> {
-    // In a real game, you'd deserialize the game state from a file.
-    // For now, we'll always return an error to start a new game.
-    Err(io::Error::new(io::ErrorKind::NotFound, "No save file found"))
-}
-
-
 pub fn init_game() -> MainGameState {
     new_game()
 }
 
 pub fn run_game_tick(state: &mut MainGameState) {
     state.tick_counter += 1;
+
+    for plot in state.plots.values_mut() {
+        for row in plot.grid.tiles.iter_mut() {
+            for tile in row.iter_mut() {
+                if let Some(plant) = &mut tile.plant {
+                    plant.age += 1;
+                    if plant.age >= plant.maturity_age {
+                        plant.life_cycle_stage = plant::LifeCycleStage::Mature;
+                    }
+                }
+            }
+        }
+    }
 }
