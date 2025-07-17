@@ -48,14 +48,14 @@ pub fn harvest(game_state: &mut MainGameState, x: u32, y: u32) {
     if let Some(plot) = game_state.plots.get_mut(&(0, 0)) {
         if let Some(tile) = plot.grid.tiles.get_mut(y as usize).and_then(|row| row.get_mut(x as usize)) {
             if let Some(plant) = &tile.plant {
-                if plant.life_cycle_stage == plant::LifeCycleStage::Mature {
+                if plant.life_cycle_stage == plant::LifeCycleStage::Fruiting {
                     let yield_amount = rand::thread_rng().gen_range(plant.genetics.yield_range.0..=plant.genetics.yield_range.1);
                     println!("Harvested {} of {} from ({}, {})", yield_amount, plant.species, x, y);
                     let entry = game_state.inventory.entry(plant.species.clone()).or_insert(0);
                     *entry += yield_amount;
                     tile.plant = None;
                 } else {
-                    println!("The plant at ({}, {}) is not mature enough to be harvested.", x, y);
+                    println!("The plant at ({}, {}) is not ready to be harvested.", x, y);
                 }
             } else {
                 println!("There is no plant at ({}, {})", x, y);
@@ -101,13 +101,18 @@ fn process_plants(state: &mut MainGameState) {
                         growth_rate *= 0.8; // 20% growth reduction if outside ideal moisture
                     }
 
-                    plant.age += (growth_rate * 1.0) as u32;
+                    plant.growth_progress += growth_rate;
+
+                    if plant.growth_progress >= 1.0 {
+                        plant.age += 1;
+                        plant.growth_progress -= 1.0;
+                    }
 
                     if plant.age >= plant.wither_time {
                         plant.life_cycle_stage = plant::LifeCycleStage::Withering;
                     } else if plant.age >= plant.maturity_age {
-                        plant.life_cycle_stage = plant::LifeCycleStage::Mature;
-                    } else if plant.age >= 5 {
+                        plant.life_cycle_stage = plant::LifeCycleStage::Fruiting;
+                    } else if plant.age >= plant.maturity_age / 2 {
                         plant.life_cycle_stage = plant::LifeCycleStage::Growing;
                     } else if plant.age > 0 {
                         plant.life_cycle_stage = plant::LifeCycleStage::Sprout;

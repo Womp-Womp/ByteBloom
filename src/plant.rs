@@ -9,6 +9,7 @@ pub struct Plant {
     pub age: u32,
     pub maturity_age: u32,
     pub wither_time: u32,
+    pub growth_progress: f32,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -51,5 +52,6 @@ pub fn create_plant(species: &str) -> Plant {
         age: 0,
         maturity_age: 10,
         wither_time: 15,
+        growth_progress: 0.0,
     }
 }
