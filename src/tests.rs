@@ -25,6 +25,7 @@ mod tests {
                         weeds: 0.0,
                     },
                     plant: None,
+                    pest: None,
                 });
             }
             tiles.push(row);
@@ -52,7 +53,7 @@ mod tests {
             .age;
         assert_eq!(initial_age, 0, "Plant should have an initial age of 0.");
 
-        run_game_tick(&mut game, None);
+        run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
 
         let new_age = game.plots[&(0, 0)].grid.tiles[0][0]
             .plant

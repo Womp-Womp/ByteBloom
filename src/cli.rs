@@ -54,6 +54,11 @@ pub enum Commands {
         x: u32,
         y: u32,
     },
+    /// Applies pesticide to a tile
+    Pesticide {
+        x: u32,
+        y: u32,
+    },
     Market(MarketCommand),
     Forecast {
         /// The number of ticks to forecast

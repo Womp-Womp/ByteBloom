@@ -3,7 +3,9 @@
 mod cli;
 mod economy;
 mod engine;
+mod events;
 mod garden;
+mod pests;
 mod plant;
 mod saveload;
 mod tui;
@@ -141,6 +143,9 @@ fn handle_command(command: cli::Commands, game_state: &mut garden::MainGameState
         }
         cli::Commands::Harvest { x, y } => {
             engine::harvest(game_state, x, y);
+        }
+        cli::Commands::Pesticide { x, y } => {
+            engine::apply_pesticide(game_state, x, y);
         }
         cli::Commands::Forecast { ticks } => {
             engine::forecast(game_state, ticks);
