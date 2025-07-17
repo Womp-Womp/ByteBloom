@@ -23,10 +23,11 @@ pub struct Nutrients {
     pub phosphorus: f32,
     pub potassium: f32,
 }
-
+use crate::plant;
 #[derive(Serialize, Deserialize)]
 pub struct Tile {
     pub soil: Soil,
+    pub plant: Option<plant::Plant>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -65,6 +66,7 @@ pub fn create_grid(width: u32, height: u32) -> Grid {
                     ph: 7.0,
                     weeds: 0.0,
                 },
+                plant: None,
             });
         }
         tiles.push(row);
