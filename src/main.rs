@@ -49,37 +49,7 @@ fn main() {
     };
 
     // Now, perform actions on the loaded or newly created game state.
-    match args.command {
-        // `New`, `Load`, and `Save` were handled above.
-        // `Save` has an early return, so it won't reach this match block.
-        // `New` and `Load` simply set the initial state, so no further action is needed here.
-        cli::Commands::New | cli::Commands::Load { .. } => { /* State already initialized */ }
-
-        // The `Plant` command from the feature branch modifies the state.
-        cli::Commands::Plant { x, y, seed } => {
-            engine::plant_seed(&mut game_state, x, y, &seed);
-            // Consider saving the game here automatically if that's desired.
-            // saveload::save_game(&game_state, "default_save.json").unwrap();
-        }
-        cli::Commands::Harvest { x, y } => {
-            engine::harvest(&mut game_state, x, y);
-        }
-
-        cli::Commands::Sell { item, quantity } => {
-            match economy::sell_item(
-                &mut game_state.inventory,
-                &mut game_state.wallet,
-                &game_state.market,
-                &item,
-                quantity,
-            ) {
-                Ok(()) => println!("Sold {} {}(s).", quantity, item),
-                Err(e) => println!("Error selling item: {}", e),
-            }
-        }
-        // All other commands fall through. `Save` is already handled.
-        _ => { /* Potentially add a game loop or other logic here */ }
-    }
+    handle_command(args.command, &mut game_state);
 
     let tomato = plant::create_plant("tomato");
     println!("Created a plant: {}", tomato.species);
@@ -97,5 +67,54 @@ fn main() {
         engine::run_game_tick(&mut game_state);
         println!("Tick: {}", game_state.tick_counter);
         std::thread::sleep(std::time::Duration::from_secs(1));
+    }
+}
+
+fn handle_command(command: cli::Commands, game_state: &mut garden::MainGameState) {
+    match command {
+        cli::Commands::New | cli::Commands::Load { .. } | cli::Commands::Save { .. } => {
+            // These are handled in the main function
+        }
+        cli::Commands::View { .. } => {
+            // Placeholder for view logic
+        }
+        cli::Commands::Plant { x, y, seed } => {
+            engine::plant_seed(game_state, x, y, &seed);
+        }
+        cli::Commands::Water { .. } => {
+            // Placeholder for water logic
+        }
+        cli::Commands::Harvest { x, y } => {
+            engine::harvest(game_state, x, y);
+        }
+        cli::Commands::Market(market_command) => match market_command.command {
+            cli::MarketCommands::Buy { item, quantity } => {
+                match economy::buy_item(
+                    &mut game_state.inventory,
+                    &mut game_state.wallet,
+                    &game_state.market,
+                    &item,
+                    quantity,
+                ) {
+                    Ok(()) => println!("Bought {} {}(s).", quantity, item),
+                    Err(e) => println!("Error buying item: {}", e),
+                }
+            }
+            cli::MarketCommands::Sell { item, quantity } => {
+                match economy::sell_item(
+                    &mut game_state.inventory,
+                    &mut game_state.wallet,
+                    &mut game_state.market,
+                    &item,
+                    quantity,
+                ) {
+                    Ok(()) => println!("Sold {} {}(s).", quantity, item),
+                    Err(e) => println!("Error selling item: {}", e),
+                }
+            }
+            cli::MarketCommands::View => {
+                println!("{}", economy::view_market(&game_state.market));
+            }
+        },
     }
 }

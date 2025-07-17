@@ -47,13 +47,29 @@ pub enum Commands {
         x: u32,
         y: u32,
     },
-    /// Shows market prices
-    Market,
-    /// Sells an item from the inventory
+    Market(MarketCommand),
+}
+
+#[derive(Parser, Debug)]
+pub struct MarketCommand {
+    #[clap(subcommand)]
+    pub command: MarketCommands,
+}
+
+#[derive(Parser, Debug)]
+pub enum MarketCommands {
+    /// Buys an item from the market
+    Buy {
+        item: String,
+        quantity: u32,
+    },
+    /// Sells an item to the market
     Sell {
         item: String,
         quantity: u32,
     },
+    /// Shows market prices
+    View,
 }
 
 pub fn parse_args() -> Args {

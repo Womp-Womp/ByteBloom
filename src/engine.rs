@@ -68,6 +68,8 @@ pub fn harvest(game_state: &mut MainGameState, x: u32, y: u32) {
     }
 }
 
+use crate::economy;
+
 pub fn run_game_tick(state: &mut MainGameState) {
     state.tick_counter += 1;
 
@@ -83,4 +85,6 @@ pub fn run_game_tick(state: &mut MainGameState) {
             }
         }
     }
+
+    economy::update_market_prices(&mut state.market);
 }
