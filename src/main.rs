@@ -13,11 +13,10 @@ fn main() {
     let args = cli::parse_args();
     println!("Command-line arguments: {:?}", args);
 
-    let mut game_state = engine::init_game();
-    println!("Game state initialized.");
-
-    engine::run_game_tick(&mut game_state);
-    println!("Game state after one tick.");
+    let mut game_state = match args.command {
+        cli::Commands::New => engine::new_game(),
+        _ => panic!("Not implemented yet"),
+    };
 
     let tomato = plant::create_plant("tomato");
     println!("Created a plant: {}", tomato.species);
