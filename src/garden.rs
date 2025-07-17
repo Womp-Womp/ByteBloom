@@ -1,5 +1,7 @@
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+#[derive(Serialize, Deserialize)]
 pub struct Soil {
     pub soil_type: SoilType,
     pub moisture: f32,
@@ -8,33 +10,41 @@ pub struct Soil {
     pub weeds: f32,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum SoilType {
     Sand,
     Clay,
     Loam,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Nutrients {
     pub nitrogen: f32,
     pub phosphorus: f32,
     pub potassium: f32,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Tile {
     pub soil: Soil,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Grid {
     pub tiles: Vec<Vec<Tile>>,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct Plot {
     pub x: i32,
     pub y: i32,
     pub grid: Grid,
 }
 
+#[serde_with::serde_as]
+#[derive(Serialize, Deserialize)]
 pub struct MainGameState {
+    #[serde_as(as = "Vec<(_, _)>")]
     pub plots: HashMap<(i32, i32), Plot>,
 }
 
