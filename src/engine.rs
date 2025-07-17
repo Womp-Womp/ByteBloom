@@ -23,6 +23,7 @@ pub fn new_game() -> MainGameState {
         wallet: 100.0,
         market: Market::default(),
         current_weather: Weather::Sunny,
+        events: Vec::new(),
     }
 }
 
@@ -68,7 +69,69 @@ pub fn harvest(game_state: &mut MainGameState, x: u32, y: u32) {
 
 use crate::economy;
 
+use crate::pests::{Pest, PestType};
 use rand::seq::SliceRandom;
+
+fn process_pests(state: &mut MainGameState) {
+    let mut rng = rand::thread_rng();
+    let mut pest_updates = Vec::new();
+    let mut new_pests = Vec::new();
+
+    for plot in state.plots.values() {
+        for y in 0..plot.grid.tiles.len() {
+            for x in 0..plot.grid.tiles[y].len() {
+                if let Some(pest) = &plot.grid.tiles[y][x].pest {
+                    let mut updated_pest = pest.clone();
+                    updated_pest.infestation_level += 0.05;
+                    pest_updates.push((x, y, updated_pest.clone()));
+
+                    // Pest spreading
+                    if rng.gen_bool(0.2) { // 20% chance to spread
+                        let mut neighbors = Vec::new();
+                        if x > 0 { neighbors.push((x - 1, y)); }
+                        let (grid_width, grid_height) = (plot.grid.tiles[y].len(), plot.grid.tiles.len());
+                        if x < grid_width - 1 { neighbors.push((x + 1, y)); }
+                        if y > 0 { neighbors.push((x, y - 1)); }
+                        if y < grid_height - 1 { neighbors.push((x, y + 1)); }
+
+                        if let Some(&(nx, ny)) = neighbors.choose(&mut rng) {
+                            if plot.grid.tiles[ny][nx].plant.is_some() && plot.grid.tiles[ny][nx].pest.is_none() {
+                                new_pests.push((nx, ny, pest.clone()));
+                            }
+                        }
+                    }
+                } else if plot.grid.tiles[y][x].plant.is_some() {
+                    if rng.gen_bool(0.1) { // 10% chance of pest appearing
+                        let pest_type = match rng.gen_range(0..3) {
+                            0 => PestType::Aphids,
+                            1 => PestType::SpiderMites,
+                            _ => PestType::Whiteflies,
+                        };
+                        new_pests.push((x, y, Pest {
+                            pest_type: pest_type.clone(),
+                            infestation_level: 0.1,
+                        }));
+                        println!("A pest has appeared: {:?} at ({}, {})", pest_type, x, y);
+                    }
+                }
+            }
+        }
+    }
+
+    for plot in state.plots.values_mut() {
+        for (x, y, pest) in &pest_updates {
+            if let Some(plant) = &mut plot.grid.tiles[*y][*x].plant {
+                plant.health -= pest.infestation_level * 0.1;
+                println!("Pest at ({}, {}) is damaging the plant. Plant health: {}", x, y, plant.health);
+            }
+            plot.grid.tiles[*y][*x].pest = Some(pest.clone());
+        }
+        for (x, y, pest) in &new_pests {
+            plot.grid.tiles[*y][*x].pest = Some(pest.clone());
+            println!("Pest has spread to ({}, {})", x, y);
+        }
+    }
+}
 
 fn process_weather(state: &mut MainGameState) {
     let mut rng = rand::thread_rng();
@@ -162,8 +225,24 @@ pub fn run_game_tick(state: &mut MainGameState, weather: Option<Weather>) {
     }
     process_environment(state);
     process_plants(state);
+    process_pests(state);
 
     economy::update_market_prices(&mut state.market);
+}
+
+pub fn apply_pesticide(game_state: &mut MainGameState, x: u32, y: u32) {
+    if let Some(plot) = game_state.plots.get_mut(&(0, 0)) {
+        if let Some(tile) = plot.grid.tiles.get_mut(y as usize).and_then(|row| row.get_mut(x as usize)) {
+            if tile.pest.is_some() {
+                tile.pest = None;
+                println!("Applied pesticide to tile ({}, {})", x, y);
+            } else {
+                println!("No pest to remove at ({}, {})", x, y);
+            }
+        } else {
+            println!("Invalid coordinates: ({}, {})", x, y);
+        }
+    }
 }
 
 pub fn forecast(game_state: &MainGameState, ticks: u64) {

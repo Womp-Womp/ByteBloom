@@ -49,11 +49,13 @@ pub struct Nutrients {
     pub phosphorus: f32,
     pub potassium: f32,
 }
+use crate::pests::Pest;
 use crate::plant;
 #[derive(Serialize, Deserialize)]
 pub struct Tile {
     pub soil: Soil,
     pub plant: Option<plant::Plant>,
+    pub pest: Option<Pest>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -69,6 +71,7 @@ pub struct Plot {
 }
 
 use crate::economy::Market;
+use crate::events::GameEvent;
 use crate::weather::Weather;
 
 #[serde_with::serde_as]
@@ -81,6 +84,7 @@ pub struct MainGameState {
     pub wallet: f32,
     pub market: Market,
     pub current_weather: Weather,
+    pub events: Vec<GameEvent>,
 }
 
 use rand::Rng;
@@ -104,6 +108,7 @@ pub fn create_grid(width: u32, height: u32) -> Grid {
                     weeds: 0.0,
                 },
                 plant: None,
+                pest: None,
             });
         }
         tiles.push(row);
