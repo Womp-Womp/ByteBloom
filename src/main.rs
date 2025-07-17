@@ -7,6 +7,7 @@ mod events;
 mod garden;
 mod pests;
 mod plant;
+mod plant_definitions;
 mod saveload;
 mod tui;
 mod tests;
