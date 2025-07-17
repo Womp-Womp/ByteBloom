@@ -76,7 +76,25 @@ fn handle_command(command: cli::Commands, game_state: &mut garden::MainGameState
             // These are handled in the main function
         }
         cli::Commands::View { .. } => {
-            // Placeholder for view logic
+            if let Some(plot) = game_state.plots.get(&(0, 0)) {
+                for row in &plot.grid.tiles {
+                    for tile in row {
+                        let symbol = match &tile.plant {
+                            Some(plant) => match plant.life_cycle_stage {
+                                plant::LifeCycleStage::Seed => 's',
+                                plant::LifeCycleStage::Sprout => 'p',
+                                plant::LifeCycleStage::Growing => 'P',
+                                plant::LifeCycleStage::Mature => 'P',
+                                plant::LifeCycleStage::Fruiting => 'P',
+                                plant::LifeCycleStage::Withering => 'x',
+                            },
+                            None => '.',
+                        };
+                        print!("{} ", symbol);
+                    }
+                    println!();
+                }
+            }
         }
         cli::Commands::Plant { x, y, seed } => {
             engine::plant_seed(game_state, x, y, &seed);

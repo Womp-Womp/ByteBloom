@@ -4,6 +4,43 @@ mod plant_lifecycle_tests {
     use crate::plant::{LifeCycleStage};
 
     #[test]
+    fn test_full_lifecycle_and_harvest() {
+        let mut game_state = new_game();
+        engine::plant_seed(&mut game_state, 0, 0, "tomato");
+
+        // Age the plant to maturity
+        for _ in 0..10 {
+            engine::run_game_tick(&mut game_state);
+        }
+
+        let plot = game_state.plots.get(&(0, 0)).unwrap();
+        let tile = &plot.grid.tiles[0][0];
+        assert_eq!(tile.plant.as_ref().unwrap().life_cycle_stage, LifeCycleStage::Mature);
+
+        // Harvest the mature plant
+        engine::harvest(&mut game_state, 0, 0);
+        let plot = game_state.plots.get(&(0, 0)).unwrap();
+        let tile = &plot.grid.tiles[0][0];
+        assert!(tile.plant.is_none());
+        assert!(*game_state.inventory.get("tomato").unwrap() > 0);
+
+        // Plant another seed and let it wither
+        engine::plant_seed(&mut game_state, 0, 0, "tomato");
+        for _ in 0..15 {
+            engine::run_game_tick(&mut game_state);
+        }
+
+        let plot = game_state.plots.get(&(0, 0)).unwrap();
+        let tile = &plot.grid.tiles[0][0];
+        assert_eq!(tile.plant.as_ref().unwrap().life_cycle_stage, LifeCycleStage::Withering);
+
+        // Try to harvest the withered plant
+        let inventory_before_harvest = game_state.inventory.clone();
+        engine::harvest(&mut game_state, 0, 0);
+        assert_eq!(game_state.inventory, inventory_before_harvest);
+    }
+
+    #[test]
     fn test_harvest_mature_plant() {
         let mut game_state = new_game();
         engine::plant_seed(&mut game_state, 0, 0, "tomato");
