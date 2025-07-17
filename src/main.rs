@@ -81,6 +81,12 @@ fn main() {
     // if let Err(e) = tui::draw_ui() {
     //     println!("Error drawing UI: {}", e);
     // }
+
+    loop {
+        engine::run_game_tick(&mut game_state);
+        println!("Tick: {}", game_state.tick_counter);
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
 }
 
 pub fn save_game(game_state: &garden::MainGameState, filename: &str) -> std::io::Result<()> {

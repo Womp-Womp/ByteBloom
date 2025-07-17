@@ -15,7 +15,10 @@ pub fn new_game() -> MainGameState {
     };
     plots.insert((0, 0), initial_plot);
 
-    MainGameState { plots }
+
+    MainGameState {
+        plots,
+        tick_counter: 0,
 }
 
 pub fn plant_seed(game_state: &mut MainGameState, x: u32, y: u32, seed: &str) {
@@ -53,5 +56,5 @@ pub fn init_game() -> MainGameState {
 }
 
 pub fn run_game_tick(state: &mut MainGameState) {
-    // Placeholder for game tick logic
+    state.tick_counter += 1;
 }
