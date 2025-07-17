@@ -72,7 +72,7 @@ use crate::economy;
 use crate::pests::{Pest, PestType};
 use rand::seq::SliceRandom;
 
-fn process_pests(state: &mut MainGameState) {
+pub fn process_pests(state: &mut MainGameState) {
     let mut rng = rand::thread_rng();
     let mut pest_updates = Vec::new();
     let mut new_pests = Vec::new();
@@ -133,7 +133,7 @@ fn process_pests(state: &mut MainGameState) {
     }
 }
 
-fn process_weather(state: &mut MainGameState) {
+pub fn process_weather(state: &mut MainGameState) {
     let mut rng = rand::thread_rng();
     let next_weather = [
         Weather::Sunny,
@@ -147,7 +147,7 @@ fn process_weather(state: &mut MainGameState) {
     println!("Weather updated to: {:?}", state.current_weather);
 }
 
-fn process_plants(state: &mut MainGameState) {
+pub fn process_plants(state: &mut MainGameState) {
     for plot in state.plots.values_mut() {
         for row in plot.grid.tiles.iter_mut() {
             for tile in row.iter_mut() {
@@ -186,7 +186,7 @@ fn process_plants(state: &mut MainGameState) {
     }
 }
 
-fn process_environment(state: &mut MainGameState) {
+pub fn process_environment(state: &mut MainGameState) {
     for plot in state.plots.values_mut() {
         for row in plot.grid.tiles.iter_mut() {
             for tile in row.iter_mut() {

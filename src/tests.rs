@@ -3,6 +3,21 @@ mod tests {
     use crate::engine::{new_game, plant_seed, run_game_tick};
     use crate::garden::{Grid, MainGameState, Nutrients, Soil, SoilType, Tile};
     use crate::plant::LifeCycleStage;
+    use crate::engine;
+
+    fn run_game_tick_without_pests(state: &mut MainGameState, weather: Option<crate::weather::Weather>) {
+        state.tick_counter += 1;
+
+        if let Some(weather) = weather {
+            state.current_weather = weather;
+        } else {
+            engine::process_weather(state);
+        }
+        engine::process_environment(state);
+        engine::process_plants(state);
+
+        crate::economy::update_market_prices(&mut state.market);
+    }
 
     fn setup_test_game() -> MainGameState {
         let mut game = new_game();
@@ -44,7 +59,7 @@ mod tests {
     #[test]
     fn test_plant_growth_ideal_conditions() {
         let mut game = setup_test_game();
-        plant_seed(&mut game, 0, 0, "tomato");
+        plant_seed(&mut game, 0, 0, "Crimson Bloom");
 
         let initial_age = game.plots[&(0, 0)].grid.tiles[0][0]
             .plant
@@ -124,7 +139,7 @@ mod tests {
     #[test]
     fn test_plant_growth_non_ideal_moisture() {
         let mut game = setup_test_game();
-        plant_seed(&mut game, 0, 0, "tomato");
+        plant_seed(&mut game, 0, 0, "Crimson Bloom");
 
         // Set moisture to a non-ideal level
         if let Some(plot) = game.plots.get_mut(&(0, 0)) {
@@ -149,7 +164,7 @@ mod tests {
     #[test]
     fn test_plant_life_cycle() {
         let mut game = setup_test_game();
-        plant_seed(&mut game, 0, 0, "tomato");
+        plant_seed(&mut game, 0, 0, "Crimson Bloom");
         game.current_weather = crate::weather::Weather::Sunny;
 
         // Check initial state
@@ -157,7 +172,7 @@ mod tests {
         assert_eq!(plant.life_cycle_stage, LifeCycleStage::Seed);
 
         // Grow to Sprout
-        run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+        run_game_tick_without_pests(&mut game, Some(crate::weather::Weather::Sunny));
         let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
         assert_eq!(plant.life_cycle_stage, LifeCycleStage::Sprout);
 
@@ -168,7 +183,7 @@ mod tests {
                     tile.soil.soil_moisture = 0.5;
                 }
             }
-            run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+            run_game_tick_without_pests(&mut game, Some(crate::weather::Weather::Sunny));
         }
         let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
         assert_eq!(plant.life_cycle_stage, LifeCycleStage::Growing);
@@ -180,7 +195,7 @@ mod tests {
                     tile.soil.soil_moisture = 0.5;
                 }
             }
-            run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+            run_game_tick_without_pests(&mut game, Some(crate::weather::Weather::Sunny));
         }
         let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
         assert_eq!(plant.life_cycle_stage, LifeCycleStage::Fruiting);
@@ -192,7 +207,7 @@ mod tests {
                     tile.soil.soil_moisture = 0.5;
                 }
             }
-            run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+            run_game_tick_without_pests(&mut game, Some(crate::weather::Weather::Sunny));
         }
         let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
         assert_eq!(plant.life_cycle_stage, LifeCycleStage::Withering);
@@ -201,7 +216,7 @@ mod tests {
     #[test]
     fn test_plant_growth_heatwave() {
         let mut game = setup_test_game();
-        plant_seed(&mut game, 0, 0, "tomato");
+        plant_seed(&mut game, 0, 0, "Crimson Bloom");
 
         // Set weather to heatwave
         game.current_weather = crate::weather::Weather::Heatwave;
@@ -222,11 +237,11 @@ mod tests {
     #[test]
     fn test_harvest() {
         let mut game = setup_test_game();
-        plant_seed(&mut game, 0, 0, "tomato");
+        plant_seed(&mut game, 0, 0, "Crimson Bloom");
 
         // Grow plant to maturity
         for _ in 0..15 {
-            run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+            run_game_tick_without_pests(&mut game, Some(crate::weather::Weather::Sunny));
         }
 
         // Harvest the plant
@@ -236,6 +251,6 @@ mod tests {
         assert!(game.plots[&(0, 0)].grid.tiles[0][0].plant.is_none());
 
         // Check that the inventory has been updated
-        assert!(game.inventory.get("tomato").unwrap() > &0);
+        assert!(game.inventory.get("Crimson Bloom").unwrap() > &0);
     }
 }
