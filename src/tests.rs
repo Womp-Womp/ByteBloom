@@ -77,23 +77,54 @@ mod plant_lifecycle_tests {
         market.items.insert("tomato".to_string(), 10.0);
 
         // Sell 5 tomatoes
-        let result = sell_item(&mut inventory, &mut wallet, &market, "tomato", 5);
+        let result = sell_item(&mut inventory, &mut wallet, &mut market, "tomato", 5);
         assert!(result.is_ok());
         assert_eq!(inventory.get("tomato"), Some(&5));
         assert_eq!(wallet, 50.0);
 
         // Try to sell more tomatoes than available
-        let result = sell_item(&mut inventory, &mut wallet, &market, "tomato", 10);
+        let result = sell_item(&mut inventory, &mut wallet, &mut market, "tomato", 10);
         assert!(result.is_err());
         assert_eq!(inventory.get("tomato"), Some(&5));
         assert_eq!(wallet, 50.0);
 
         // Try to sell an item that doesn't exist in the inventory
-        let result = sell_item(&mut inventory, &mut wallet, &market, "potato", 5);
+        let result = sell_item(&mut inventory, &mut wallet, &mut market, "potato", 5);
         assert!(result.is_err());
 
         // Try to sell an item that doesn't exist in the market
-        let result = sell_item(&mut inventory, &mut wallet, &market, "cabbage", 5);
+        let result = sell_item(&mut inventory, &mut wallet, &mut market, "cabbage", 5);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_economic_loop() {
+        let mut game_state = new_game();
+        let initial_wallet = game_state.wallet;
+
+        // Plant a seed
+        engine::plant_seed(&mut game_state, 0, 0, "tomato");
+
+        // Age the plant to maturity
+        for _ in 0..10 {
+            engine::run_game_tick(&mut game_state);
+        }
+
+        // Harvest the plant
+        engine::harvest(&mut game_state, 0, 0);
+        let harvested_amount = *game_state.inventory.get("tomato").unwrap();
+        assert!(harvested_amount > 0);
+
+        // Sell the harvested item
+        let result = sell_item(
+            &mut game_state.inventory,
+            &mut game_state.wallet,
+            &mut game_state.market,
+            "tomato",
+            harvested_amount,
+        );
+        assert!(result.is_ok());
+        assert_eq!(game_state.inventory.get("tomato"), Some(&0));
+        assert!(game_state.wallet > initial_wallet);
     }
 }
