@@ -42,6 +42,8 @@ pub struct Plot {
     pub grid: Grid,
 }
 
+use crate::economy::Market;
+
 #[serde_with::serde_as]
 #[derive(Serialize, Deserialize)]
 pub struct MainGameState {
@@ -49,6 +51,8 @@ pub struct MainGameState {
     pub plots: HashMap<(i32, i32), Plot>,
     pub tick_counter: u64,
     pub inventory: HashMap<String, u32>,
+    pub wallet: f32,
+    pub market: Market,
 }
 
 pub fn create_grid(width: u32, height: u32) -> Grid {

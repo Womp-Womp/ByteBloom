@@ -49,6 +49,11 @@ pub enum Commands {
     },
     /// Shows market prices
     Market,
+    /// Sells an item from the inventory
+    Sell {
+        item: String,
+        quantity: u32,
+    },
 }
 
 pub fn parse_args() -> Args {

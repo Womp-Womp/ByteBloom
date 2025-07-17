@@ -3,6 +3,7 @@
 use crate::garden::{create_grid, MainGameState, Plot};
 use crate::plant;
 use std::collections::HashMap;
+use crate::economy::Market;
 
 pub fn new_game() -> MainGameState {
     let mut plots = HashMap::new();
@@ -18,6 +19,8 @@ pub fn new_game() -> MainGameState {
         plots,
         tick_counter: 0,
         inventory: HashMap::new(),
+        wallet: 100.0,
+        market: Market::default(),
     }
 }
 

@@ -65,6 +65,18 @@ fn main() {
             engine::harvest(&mut game_state, x, y);
         }
 
+        cli::Commands::Sell { item, quantity } => {
+            match economy::sell_item(
+                &mut game_state.inventory,
+                &mut game_state.wallet,
+                &game_state.market,
+                &item,
+                quantity,
+            ) {
+                Ok(()) => println!("Sold {} {}(s).", quantity, item),
+                Err(e) => println!("Error selling item: {}", e),
+            }
+        }
         // All other commands fall through. `Save` is already handled.
         _ => { /* Potentially add a game loop or other logic here */ }
     }

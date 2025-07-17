@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::engine::{self, new_game};
-    use crate::plant::{self, LifeCycleStage};
+    use crate::plant::{LifeCycleStage};
 
     #[test]
     fn test_harvest() {
@@ -23,5 +23,37 @@ mod tests {
         let tile = &plot.grid.tiles[0][0];
         assert!(tile.plant.is_none());
         assert!(*game_state.inventory.get("tomato").unwrap() > 0);
+    }
+
+    use crate::economy::{sell_item, Market};
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_sell_item() {
+        let mut inventory = HashMap::new();
+        inventory.insert("tomato".to_string(), 10);
+        let mut wallet = 0.0;
+        let mut market = Market::default();
+        market.items.insert("tomato".to_string(), 10.0);
+
+        // Sell 5 tomatoes
+        let result = sell_item(&mut inventory, &mut wallet, &market, "tomato", 5);
+        assert!(result.is_ok());
+        assert_eq!(inventory.get("tomato"), Some(&5));
+        assert_eq!(wallet, 50.0);
+
+        // Try to sell more tomatoes than available
+        let result = sell_item(&mut inventory, &mut wallet, &market, "tomato", 10);
+        assert!(result.is_err());
+        assert_eq!(inventory.get("tomato"), Some(&5));
+        assert_eq!(wallet, 50.0);
+
+        // Try to sell an item that doesn't exist in the inventory
+        let result = sell_item(&mut inventory, &mut wallet, &market, "potato", 5);
+        assert!(result.is_err());
+
+        // Try to sell an item that doesn't exist in the market
+        let result = sell_item(&mut inventory, &mut wallet, &market, "cabbage", 5);
+        assert!(result.is_err());
     }
 }
