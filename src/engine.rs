@@ -14,6 +14,7 @@ pub fn new_game() -> MainGameState {
 
     MainGameState {
         plots,
+        tick_counter: 0,
     }
 }
 
@@ -22,5 +23,5 @@ pub fn init_game() -> MainGameState {
 }
 
 pub fn run_game_tick(state: &mut MainGameState) {
-    // Placeholder for game tick logic
+    state.tick_counter += 1;
 }

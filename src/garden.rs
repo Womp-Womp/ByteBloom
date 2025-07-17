@@ -36,6 +36,7 @@ pub struct Plot {
 
 pub struct MainGameState {
     pub plots: HashMap<(i32, i32), Plot>,
+    pub tick_counter: u64,
 }
 
 pub fn create_grid(width: u32, height: u32) -> Grid {
