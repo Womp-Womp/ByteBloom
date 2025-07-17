@@ -5,12 +5,9 @@ mod economy;
 mod engine;
 mod garden;
 mod plant;
-mod tui;
 mod saveload;
+mod tui;
 
-use std::fs;
-use std::fs::File;
-use std::io::Write;
 fn main() {
     println!("Hello from ByteBloom Gardens!");
 
@@ -22,9 +19,9 @@ fn main() {
         // The Save command from `main` branch loads the default game, saves it to a new file, and exits.
         cli::Commands::Save { filename } => {
             // First, get the current game state to save. We load the default save file, or create a new game if none exists.
-            let game_state = engine::load_game().unwrap_or_else(|_| engine::new_game());
+            let game_state = saveload::load_game("default_save.json").unwrap_or_else(|_| engine::new_game());
             // Then, perform the save operation.
-            engine::save_game(&game_state, filename).unwrap();
+            saveload::save_game(&game_state, filename).unwrap();
             println!("Game saved to {}", filename);
             return; // Exit after saving, as was the behavior in the `main` branch.
         }
@@ -40,12 +37,11 @@ fn main() {
         }
         cli::Commands::Load { filename } => {
             println!("Loading game from {}.", filename);
-            engine::load_game(filename)
-                .expect("Failed to load game from specified file.")
+            saveload::load_game(filename).expect("Failed to load game from specified file.")
         }
         // For `Plant` or any other command, load the default game state.
         // If it doesn't exist, start a new game. This was the core logic from the `plant` branch.
-        _ => engine::load_game().unwrap_or_else(|_| {
+        _ => saveload::load_game("default_save.json").unwrap_or_else(|_| {
             println!("No saved game found, starting a new one.");
             engine::new_game()
         }),
@@ -62,13 +58,12 @@ fn main() {
         cli::Commands::Plant { x, y, seed } => {
             engine::plant_seed(&mut game_state, x, y, &seed);
             // Consider saving the game here automatically if that's desired.
-            // engine::save_game(&game_state, "default_save.json").unwrap();
+            // saveload::save_game(&game_state, "default_save.json").unwrap();
         }
 
         // All other commands fall through. `Save` is already handled.
         _ => { /* Potentially add a game loop or other logic here */ }
     }
-    };
 
     let tomato = plant::create_plant("tomato");
     println!("Created a plant: {}", tomato.species);
@@ -87,17 +82,4 @@ fn main() {
         println!("Tick: {}", game_state.tick_counter);
         std::thread::sleep(std::time::Duration::from_secs(1));
     }
-}
-
-pub fn save_game(game_state: &garden::MainGameState, filename: &str) -> std::io::Result<()> {
-    let serialized = serde_json::to_string(game_state).unwrap();
-    let mut file = File::create(filename)?;
-    file.write_all( serialized.as_bytes())?;
-    Ok(())
-}
-
-pub fn load_game(filename: &str) -> std::io::Result<garden::MainGameState> {
-    let data = fs::read_to_string(filename)?;
-    let game_state = serde_json::from_str(&data).unwrap();
-    Ok(game_state)
 }
