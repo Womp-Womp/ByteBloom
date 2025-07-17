@@ -42,6 +42,13 @@ pub enum Commands {
         x: u32,
         y: u32,
     },
+    /// Fertilizes a tile
+    Fertilize {
+        x: u32,
+        y: u32,
+        #[clap(long)]
+        npk_mix: String,
+    },
     /// Harvests a mature plant
     Harvest {
         x: u32,
