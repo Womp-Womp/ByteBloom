@@ -1,4 +1,5 @@
-# using Rust
+# ByteBloom Gardens
+### using Rust
 PRD & Readme: ByteBloom Gardens
 1. Vision & Overview
 
