@@ -13,8 +13,16 @@ fn main() {
     let args = cli::parse_args();
     println!("Command-line arguments: {:?}", args);
 
-    let mut game_state = match args.command {
-        cli::Commands::New => engine::new_game(),
+    let mut game_state = engine::load_game().unwrap_or_else(|_| {
+        println!("No saved game found, starting a new one.");
+        engine::new_game()
+    });
+
+    match args.command {
+        cli::Commands::New => { /* Already handled by load_game */ }
+        cli::Commands::Plant { x, y, seed } => {
+            engine::plant_seed(&mut game_state, x, y, &seed);
+        }
         _ => panic!("Not implemented yet"),
     };
 

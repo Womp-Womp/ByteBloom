@@ -20,8 +20,11 @@ pub struct Nutrients {
     pub potassium: f32,
 }
 
+use crate::plant;
+
 pub struct Tile {
     pub soil: Soil,
+    pub plant: Option<plant::Plant>,
 }
 
 pub struct Grid {
@@ -55,6 +58,7 @@ pub fn create_grid(width: u32, height: u32) -> Grid {
                     ph: 7.0,
                     weeds: 0.0,
                 },
+                plant: None,
             });
         }
         tiles.push(row);
