@@ -61,15 +61,8 @@ fn main() {
     println!("The price of corn is: {}", price);
 
     // The TUI will take over the terminal, so we'll just call it and let it run.
-    // Note: This will fail to compile until we add the TUI dependencies.
-    // if let Err(e) = tui::draw_ui() {
-    //     println!("Error drawing UI: {}", e);
-    // }
-
-    loop {
-        engine::run_game_tick(&mut game_state, None);
-        println!("Tick: {}", game_state.tick_counter);
-        std::thread::sleep(std::time::Duration::from_secs(1));
+    if let Err(e) = tui::draw_ui(&mut game_state) {
+        println!("Error drawing UI: {}", e);
     }
 }
 
