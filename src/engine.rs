@@ -1,24 +1,20 @@
 // src/engine.rs
 
-use crate::garden::Grid;
-use crate::economy::Market;
+use crate::garden::{create_grid, MainGameState, Plot};
+use std::collections::HashMap;
 
-pub struct GameState {
-    pub grid: Grid,
-    pub market: Market,
-    pub game_time: u64,
-}
+pub fn init_game() -> MainGameState {
+    let mut plots = HashMap::new();
+    let initial_plot = Plot {
+        grid: create_grid(10, 10),
+    };
+    plots.insert("main_plot".to_string(), initial_plot);
 
-pub fn init_game() -> GameState {
-    // Placeholder for game initialization
-    GameState {
-        grid: crate::garden::create_grid(100, 100),
-        market: Market {},
-        game_time: 0,
+    MainGameState {
+        plots,
     }
 }
 
-pub fn run_game_tick(state: &mut GameState) {
+pub fn run_game_tick(state: &mut MainGameState) {
     // Placeholder for game tick logic
-    state.game_time += 1;
 }

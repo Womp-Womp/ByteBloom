@@ -14,10 +14,10 @@ fn main() {
     println!("Command-line arguments: {:?}", args);
 
     let mut game_state = engine::init_game();
-    println!("Game state initialized with time: {}", game_state.game_time);
+    println!("Game state initialized.");
 
     engine::run_game_tick(&mut game_state);
-    println!("Game state after one tick: {}", game_state.game_time);
+    println!("Game state after one tick.");
 
     let tomato = plant::create_plant("tomato");
     println!("Created a plant: {}", tomato.species);
