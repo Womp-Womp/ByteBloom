@@ -10,6 +10,32 @@ pub struct Soil {
     pub weeds: f32,
 }
 
+// TODO: Implement different soil types with distinct properties.
+//
+// Design Idea:
+// - Each `SoilType` variant could have associated data representing its properties.
+//   For example:
+//   - Water retention: How quickly the soil dries out or becomes waterlogged.
+//   - Nutrient retention: How well the soil holds onto nutrients.
+//   - Drainage: How quickly water passes through the soil.
+//   - Aeration: How much air is in the soil.
+//
+// - These properties would then influence:
+//   - Plant growth rates.
+//   - The effectiveness of watering and fertilizing.
+//   - The likelihood of certain events, like root rot or drought stress.
+//
+// Example implementation:
+//
+// pub enum SoilType {
+//     Sand { water_retention: f32, nutrient_retention: f32 },
+//     Clay { water_retention: f32, nutrient_retention: f32 },
+//     Loam { water_retention: f32, nutrient_retention: f32 },
+// }
+//
+// The `process_environment` function in `engine.rs` would then use these
+// properties to calculate changes in soil moisture and nutrient levels.
+
 #[derive(Serialize, Deserialize)]
 pub enum SoilType {
     Sand,
@@ -43,6 +69,7 @@ pub struct Plot {
 }
 
 use crate::economy::Market;
+use crate::weather::Weather;
 
 #[serde_with::serde_as]
 #[derive(Serialize, Deserialize)]
@@ -53,6 +80,7 @@ pub struct MainGameState {
     pub inventory: HashMap<String, u32>,
     pub wallet: f32,
     pub market: Market,
+    pub current_weather: Weather,
 }
 
 use rand::Rng;

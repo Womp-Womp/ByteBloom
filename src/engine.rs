@@ -2,6 +2,7 @@
 
 use crate::garden::{create_grid, MainGameState, Plot};
 use crate::plant;
+use crate::weather::Weather;
 use std::collections::HashMap;
 use crate::economy::Market;
 
@@ -21,6 +22,7 @@ pub fn new_game() -> MainGameState {
         inventory: HashMap::new(),
         wallet: 100.0,
         market: Market::default(),
+        current_weather: Weather::Sunny,
     }
 }
 
@@ -38,10 +40,6 @@ pub fn plant_seed(game_state: &mut MainGameState, x: u32, y: u32, seed: &str) {
             println!("Invalid coordinates: ({}, {})", x, y);
         }
     }
-}
-
-pub fn init_game() -> MainGameState {
-    new_game()
 }
 
 use rand::Rng;
@@ -70,32 +68,38 @@ pub fn harvest(game_state: &mut MainGameState, x: u32, y: u32) {
 
 use crate::economy;
 
-pub fn run_game_tick(state: &mut MainGameState) {
-    state.tick_counter += 1;
+use rand::seq::SliceRandom;
 
+fn process_weather(state: &mut MainGameState) {
+    let mut rng = rand::thread_rng();
+    let next_weather = [
+        Weather::Sunny,
+        Weather::Cloudy,
+        Weather::Rainy,
+        Weather::Heatwave,
+    ]
+    .choose(&mut rng)
+    .unwrap();
+    state.current_weather = *next_weather;
+    println!("Weather updated to: {:?}", state.current_weather);
+}
+
+fn process_plants(state: &mut MainGameState) {
     for plot in state.plots.values_mut() {
         for row in plot.grid.tiles.iter_mut() {
             for tile in row.iter_mut() {
                 if let Some(plant) = &mut tile.plant {
                     let mut growth_rate = 1.0;
 
+                    if state.current_weather == Weather::Heatwave {
+                        growth_rate *= 0.5; // 50% growth reduction during heatwave
+                    }
+
                     // Check moisture levels
                     let (min_moisture, max_moisture) = plant.genetics.ideal_moisture_range;
                     if tile.soil.soil_moisture < min_moisture || tile.soil.soil_moisture > max_moisture {
                         growth_rate *= 0.8; // 20% growth reduction if outside ideal moisture
                     }
-
-                    // Consume water and nutrients
-                    tile.soil.soil_moisture -= 0.01; // Constant water consumption for now
-                    tile.soil.soil_nutrients.nitrogen -= plant.genetics.nutrient_consumption.0;
-                    tile.soil.soil_nutrients.phosphorus -= plant.genetics.nutrient_consumption.1;
-                    tile.soil.soil_nutrients.potassium -= plant.genetics.nutrient_consumption.2;
-
-                    // Clamp soil values
-                    tile.soil.soil_moisture = tile.soil.soil_moisture.clamp(0.0, 1.0);
-                    tile.soil.soil_nutrients.nitrogen = tile.soil.soil_nutrients.nitrogen.clamp(0.0, 1.0);
-                    tile.soil.soil_nutrients.phosphorus = tile.soil.soil_nutrients.phosphorus.clamp(0.0, 1.0);
-                    tile.soil.soil_nutrients.potassium = tile.soil.soil_nutrients.potassium.clamp(0.0, 1.0);
 
                     plant.age += (growth_rate * 1.0) as u32;
 
@@ -108,6 +112,61 @@ pub fn run_game_tick(state: &mut MainGameState) {
             }
         }
     }
+}
+
+fn process_environment(state: &mut MainGameState) {
+    for plot in state.plots.values_mut() {
+        for row in plot.grid.tiles.iter_mut() {
+            for tile in row.iter_mut() {
+                match state.current_weather {
+                    Weather::Sunny => tile.soil.soil_moisture -= 0.05,
+                    Weather::Rainy => tile.soil.soil_moisture += 0.2,
+                    Weather::Heatwave => tile.soil.soil_moisture -= 0.1,
+                    _ => {}
+                }
+
+                if let Some(plant) = &mut tile.plant {
+                    // Consume water and nutrients
+                    tile.soil.soil_moisture -= 0.01; // Constant water consumption for now
+                    tile.soil.soil_nutrients.nitrogen -= plant.genetics.nutrient_consumption.0;
+                    tile.soil.soil_nutrients.phosphorus -= plant.genetics.nutrient_consumption.1;
+                    tile.soil.soil_nutrients.potassium -= plant.genetics.nutrient_consumption.2;
+                }
+
+                // Clamp soil values
+                tile.soil.soil_moisture = tile.soil.soil_moisture.clamp(0.0, 1.0);
+                tile.soil.soil_nutrients.nitrogen = tile.soil.soil_nutrients.nitrogen.clamp(0.0, 1.0);
+                tile.soil.soil_nutrients.phosphorus = tile.soil.soil_nutrients.phosphorus.clamp(0.0, 1.0);
+                tile.soil.soil_nutrients.potassium = tile.soil.soil_nutrients.potassium.clamp(0.0, 1.0);
+            }
+        }
+    }
+}
+
+pub fn run_game_tick(state: &mut MainGameState) {
+    state.tick_counter += 1;
+
+    process_weather(state);
+    process_plants(state);
+    process_environment(state);
 
     economy::update_market_prices(&mut state.market);
+}
+
+pub fn forecast(game_state: &MainGameState, ticks: u64) {
+    let mut rng = rand::thread_rng();
+    let mut weather;
+    println!("Weather forecast:");
+    for i in 0..ticks {
+        let next_weather = [
+            Weather::Sunny,
+            Weather::Cloudy,
+            Weather::Rainy,
+            Weather::Heatwave,
+        ]
+        .choose(&mut rng)
+        .unwrap();
+        weather = *next_weather;
+        println!("Tick {}: {:?}", game_state.tick_counter + i + 1, weather);
+    }
 }
