@@ -1,10 +1,10 @@
 #[cfg(test)]
-mod tests {
+mod plant_lifecycle_tests {
     use crate::engine::{self, new_game};
     use crate::plant::{LifeCycleStage};
 
     #[test]
-    fn test_harvest() {
+    fn test_harvest_mature_plant() {
         let mut game_state = new_game();
         engine::plant_seed(&mut game_state, 0, 0, "tomato");
 
@@ -23,6 +23,46 @@ mod tests {
         let tile = &plot.grid.tiles[0][0];
         assert!(tile.plant.is_none());
         assert!(*game_state.inventory.get("tomato").unwrap() > 0);
+    }
+
+    #[test]
+    fn test_run_game_tick() {
+        let mut game_state = new_game();
+        engine::plant_seed(&mut game_state, 0, 0, "tomato");
+
+        let plot = game_state.plots.get(&(0, 0)).unwrap();
+        let tile = &plot.grid.tiles[0][0];
+        assert_eq!(tile.plant.as_ref().unwrap().age, 0);
+        assert_eq!(tile.plant.as_ref().unwrap().life_cycle_stage, LifeCycleStage::Seed);
+
+        engine::run_game_tick(&mut game_state);
+
+        let plot = game_state.plots.get(&(0, 0)).unwrap();
+        let tile = &plot.grid.tiles[0][0];
+        assert_eq!(tile.plant.as_ref().unwrap().age, 1);
+        assert_eq!(tile.plant.as_ref().unwrap().life_cycle_stage, LifeCycleStage::Seed);
+
+        for _ in 0..9 {
+            engine::run_game_tick(&mut game_state);
+        }
+
+        let plot = game_state.plots.get(&(0, 0)).unwrap();
+        let tile = &plot.grid.tiles[0][0];
+        assert_eq!(tile.plant.as_ref().unwrap().age, 10);
+        assert_eq!(tile.plant.as_ref().unwrap().life_cycle_stage, LifeCycleStage::Mature);
+    }
+
+    #[test]
+    fn test_harvest_immature_plant() {
+        let mut game_state = new_game();
+        engine::plant_seed(&mut game_state, 0, 0, "tomato");
+
+        engine::harvest(&mut game_state, 0, 0);
+
+        let plot = game_state.plots.get(&(0, 0)).unwrap();
+        let tile = &plot.grid.tiles[0][0];
+        assert!(tile.plant.is_some());
+        assert_eq!(game_state.inventory.get("tomato"), None);
     }
 
     use crate::economy::{sell_item, Market};
