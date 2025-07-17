@@ -29,11 +29,13 @@ pub struct Grid {
 }
 
 pub struct Plot {
+    pub x: i32,
+    pub y: i32,
     pub grid: Grid,
 }
 
 pub struct MainGameState {
-    pub plots: HashMap<String, Plot>,
+    pub plots: HashMap<(i32, i32), Plot>,
 }
 
 pub fn create_grid(width: u32, height: u32) -> Grid {

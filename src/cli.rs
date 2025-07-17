@@ -12,10 +12,7 @@ pub struct Args {
 #[derive(Parser, Debug)]
 pub enum Commands {
     /// Starts a new game
-    New {
-        #[clap(short, long)]
-        name: String,
-    },
+    New,
     /// Views the garden
     View {
         #[clap(long)]
