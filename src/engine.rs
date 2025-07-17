@@ -107,6 +107,10 @@ fn process_plants(state: &mut MainGameState) {
                         plant.life_cycle_stage = plant::LifeCycleStage::Withering;
                     } else if plant.age >= plant.maturity_age {
                         plant.life_cycle_stage = plant::LifeCycleStage::Mature;
+                    } else if plant.age >= 5 {
+                        plant.life_cycle_stage = plant::LifeCycleStage::Growing;
+                    } else if plant.age > 0 {
+                        plant.life_cycle_stage = plant::LifeCycleStage::Sprout;
                     }
                 }
             }
@@ -143,12 +147,16 @@ fn process_environment(state: &mut MainGameState) {
     }
 }
 
-pub fn run_game_tick(state: &mut MainGameState) {
+pub fn run_game_tick(state: &mut MainGameState, weather: Option<Weather>) {
     state.tick_counter += 1;
 
-    process_weather(state);
-    process_plants(state);
+    if let Some(weather) = weather {
+        state.current_weather = weather;
+    } else {
+        process_weather(state);
+    }
     process_environment(state);
+    process_plants(state);
 
     economy::update_market_prices(&mut state.market);
 }
