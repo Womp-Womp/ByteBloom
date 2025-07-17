@@ -172,7 +172,7 @@ mod tests {
         let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
         assert_eq!(plant.life_cycle_stage, LifeCycleStage::Growing);
 
-        // Grow to Mature
+        // Grow to Fruiting
         for _ in 0..5 {
             if let Some(plot) = game.plots.get_mut(&(0, 0)) {
                 if let Some(tile) = plot.grid.tiles.get_mut(0).and_then(|row| row.get_mut(0)) {
@@ -182,7 +182,7 @@ mod tests {
             run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
         }
         let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
-        assert_eq!(plant.life_cycle_stage, LifeCycleStage::Mature);
+        assert_eq!(plant.life_cycle_stage, LifeCycleStage::Fruiting);
 
         // Grow to Withering
         for _ in 0..5 {
