@@ -42,7 +42,10 @@ pub fn draw_ui(game_state: &mut MainGameState) -> io::Result<()> {
     Ok(())
 }
 
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, game_state: &mut MainGameState) -> io::Result<()> {
+fn run_app<B: Backend>(
+    terminal: &mut Terminal<B>,
+    game_state: &mut MainGameState,
+) -> io::Result<()> {
     loop {
         terminal.draw(|f| ui(f, game_state))?;
 
@@ -58,13 +61,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, game_state: &MainGameState) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .margin(1)
-        .constraints(
-            [
-                Constraint::Percentage(80),
-                Constraint::Percentage(20),
-            ]
-            .as_ref(),
-        )
+        .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
         .split(f.size());
 
     let garden_view = if let Some(plot) = game_state.plots.get(&(0, 0)) {
@@ -101,6 +98,8 @@ fn ui<B: Backend>(f: &mut Frame<B>, game_state: &MainGameState) {
     );
     let status_paragraph = Paragraph::new(status_text);
 
-    let status_block = Block::default().title("Command/Status Bar").borders(Borders::ALL);
+    let status_block = Block::default()
+        .title("Command/Status Bar")
+        .borders(Borders::ALL);
     f.render_widget(status_paragraph.block(status_block), chunks[1]);
 }

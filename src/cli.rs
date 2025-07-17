@@ -75,15 +75,9 @@ pub struct MarketCommand {
 #[derive(Parser, Debug)]
 pub enum MarketCommands {
     /// Buys an item from the market
-    Buy {
-        item: String,
-        quantity: u32,
-    },
+    Buy { item: String, quantity: u32 },
     /// Sells an item to the market
-    Sell {
-        item: String,
-        quantity: u32,
-    },
+    Sell { item: String, quantity: u32 },
     /// Shows market prices
     View,
 }

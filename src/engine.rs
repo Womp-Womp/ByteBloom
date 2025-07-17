@@ -1,10 +1,10 @@
 // src/engine.rs
 
+use crate::economy::Market;
 use crate::garden::{create_grid, MainGameState, Plot};
 use crate::plant;
 use crate::weather::Weather;
 use std::collections::HashMap;
-use crate::economy::Market;
 
 pub fn new_game() -> MainGameState {
     let mut plots = HashMap::new();
@@ -14,7 +14,6 @@ pub fn new_game() -> MainGameState {
         grid: create_grid(10, 10),
     };
     plots.insert((0, 0), initial_plot);
-
 
     MainGameState {
         plots,
@@ -29,7 +28,12 @@ pub fn new_game() -> MainGameState {
 
 pub fn plant_seed(game_state: &mut MainGameState, x: u32, y: u32, seed: &str) {
     if let Some(plot) = game_state.plots.get_mut(&(0, 0)) {
-        if let Some(tile) = plot.grid.tiles.get_mut(y as usize).and_then(|row| row.get_mut(x as usize)) {
+        if let Some(tile) = plot
+            .grid
+            .tiles
+            .get_mut(y as usize)
+            .and_then(|row| row.get_mut(x as usize))
+        {
             if tile.plant.is_none() {
                 let new_plant = plant::create_plant(seed);
                 tile.plant = Some(new_plant);
@@ -47,12 +51,24 @@ use rand::Rng;
 
 pub fn harvest(game_state: &mut MainGameState, x: u32, y: u32) {
     if let Some(plot) = game_state.plots.get_mut(&(0, 0)) {
-        if let Some(tile) = plot.grid.tiles.get_mut(y as usize).and_then(|row| row.get_mut(x as usize)) {
+        if let Some(tile) = plot
+            .grid
+            .tiles
+            .get_mut(y as usize)
+            .and_then(|row| row.get_mut(x as usize))
+        {
             if let Some(plant) = &tile.plant {
                 if plant.life_cycle_stage == plant::LifeCycleStage::Fruiting {
-                    let yield_amount = rand::thread_rng().gen_range(plant.genetics.yield_range.0..=plant.genetics.yield_range.1);
-                    println!("Harvested {} of {} from ({}, {})", yield_amount, plant.species, x, y);
-                    let entry = game_state.inventory.entry(plant.species.clone()).or_insert(0);
+                    let yield_amount = rand::thread_rng()
+                        .gen_range(plant.genetics.yield_range.0..=plant.genetics.yield_range.1);
+                    println!(
+                        "Harvested {} of {} from ({}, {})",
+                        yield_amount, plant.species, x, y
+                    );
+                    let entry = game_state
+                        .inventory
+                        .entry(plant.species.clone())
+                        .or_insert(0);
                     *entry += yield_amount;
                     tile.plant = None;
                 } else {
@@ -86,31 +102,48 @@ fn process_pests(state: &mut MainGameState) {
                     pest_updates.push((x, y, updated_pest.clone()));
 
                     // Pest spreading
-                    if rng.gen_bool(0.2) { // 20% chance to spread
+                    if rng.gen_bool(0.2) {
+                        // 20% chance to spread
                         let mut neighbors = Vec::new();
-                        if x > 0 { neighbors.push((x - 1, y)); }
-                        let (grid_width, grid_height) = (plot.grid.tiles[y].len(), plot.grid.tiles.len());
-                        if x < grid_width - 1 { neighbors.push((x + 1, y)); }
-                        if y > 0 { neighbors.push((x, y - 1)); }
-                        if y < grid_height - 1 { neighbors.push((x, y + 1)); }
+                        if x > 0 {
+                            neighbors.push((x - 1, y));
+                        }
+                        let (grid_width, grid_height) =
+                            (plot.grid.tiles[y].len(), plot.grid.tiles.len());
+                        if x < grid_width - 1 {
+                            neighbors.push((x + 1, y));
+                        }
+                        if y > 0 {
+                            neighbors.push((x, y - 1));
+                        }
+                        if y < grid_height - 1 {
+                            neighbors.push((x, y + 1));
+                        }
 
                         if let Some(&(nx, ny)) = neighbors.choose(&mut rng) {
-                            if plot.grid.tiles[ny][nx].plant.is_some() && plot.grid.tiles[ny][nx].pest.is_none() {
+                            if plot.grid.tiles[ny][nx].plant.is_some()
+                                && plot.grid.tiles[ny][nx].pest.is_none()
+                            {
                                 new_pests.push((nx, ny, pest.clone()));
                             }
                         }
                     }
                 } else if plot.grid.tiles[y][x].plant.is_some() {
-                    if rng.gen_bool(0.1) { // 10% chance of pest appearing
+                    if rng.gen_bool(0.1) {
+                        // 10% chance of pest appearing
                         let pest_type = match rng.gen_range(0..3) {
                             0 => PestType::Aphids,
                             1 => PestType::SpiderMites,
                             _ => PestType::Whiteflies,
                         };
-                        new_pests.push((x, y, Pest {
-                            pest_type: pest_type.clone(),
-                            infestation_level: 0.1,
-                        }));
+                        new_pests.push((
+                            x,
+                            y,
+                            Pest {
+                                pest_type: pest_type.clone(),
+                                infestation_level: 0.1,
+                            },
+                        ));
                         println!("A pest has appeared: {:?} at ({}, {})", pest_type, x, y);
                     }
                 }
@@ -122,7 +155,10 @@ fn process_pests(state: &mut MainGameState) {
         for (x, y, pest) in &pest_updates {
             if let Some(plant) = &mut plot.grid.tiles[*y][*x].plant {
                 plant.health -= pest.infestation_level * 0.1;
-                println!("Pest at ({}, {}) is damaging the plant. Plant health: {}", x, y, plant.health);
+                println!(
+                    "Pest at ({}, {}) is damaging the plant. Plant health: {}",
+                    x, y, plant.health
+                );
             }
             plot.grid.tiles[*y][*x].pest = Some(pest.clone());
         }
@@ -160,7 +196,9 @@ fn process_plants(state: &mut MainGameState) {
 
                     // Check moisture levels
                     let (min_moisture, max_moisture) = plant.genetics.ideal_moisture_range;
-                    if tile.soil.soil_moisture < min_moisture || tile.soil.soil_moisture > max_moisture {
+                    if tile.soil.soil_moisture < min_moisture
+                        || tile.soil.soil_moisture > max_moisture
+                    {
                         growth_rate *= 0.8; // 20% growth reduction if outside ideal moisture
                     }
 
@@ -207,9 +245,12 @@ fn process_environment(state: &mut MainGameState) {
 
                 // Clamp soil values
                 tile.soil.soil_moisture = tile.soil.soil_moisture.clamp(0.0, 1.0);
-                tile.soil.soil_nutrients.nitrogen = tile.soil.soil_nutrients.nitrogen.clamp(0.0, 1.0);
-                tile.soil.soil_nutrients.phosphorus = tile.soil.soil_nutrients.phosphorus.clamp(0.0, 1.0);
-                tile.soil.soil_nutrients.potassium = tile.soil.soil_nutrients.potassium.clamp(0.0, 1.0);
+                tile.soil.soil_nutrients.nitrogen =
+                    tile.soil.soil_nutrients.nitrogen.clamp(0.0, 1.0);
+                tile.soil.soil_nutrients.phosphorus =
+                    tile.soil.soil_nutrients.phosphorus.clamp(0.0, 1.0);
+                tile.soil.soil_nutrients.potassium =
+                    tile.soil.soil_nutrients.potassium.clamp(0.0, 1.0);
             }
         }
     }
@@ -232,7 +273,12 @@ pub fn run_game_tick(state: &mut MainGameState, weather: Option<Weather>) {
 
 pub fn apply_pesticide(game_state: &mut MainGameState, x: u32, y: u32) {
     if let Some(plot) = game_state.plots.get_mut(&(0, 0)) {
-        if let Some(tile) = plot.grid.tiles.get_mut(y as usize).and_then(|row| row.get_mut(x as usize)) {
+        if let Some(tile) = plot
+            .grid
+            .tiles
+            .get_mut(y as usize)
+            .and_then(|row| row.get_mut(x as usize))
+        {
             if tile.pest.is_some() {
                 tile.pest = None;
                 println!("Applied pesticide to tile ({}, {})", x, y);

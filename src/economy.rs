@@ -1,8 +1,8 @@
 // src/economy.rs
 
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use rand::Rng;
 
 #[derive(Serialize, Deserialize)]
 pub struct Market {
@@ -37,7 +37,10 @@ pub fn sell_item(
                 *available_quantity -= quantity;
                 *wallet += price * quantity as f32;
 
-                let supply_demand_effect = market.supply_demand.entry(item_name.to_string()).or_insert(1.0);
+                let supply_demand_effect = market
+                    .supply_demand
+                    .entry(item_name.to_string())
+                    .or_insert(1.0);
                 *supply_demand_effect -= (quantity as f32) / 100.0;
 
                 Ok(())
@@ -105,4 +108,3 @@ pub fn view_market(market: &Market) -> String {
     }
     market_view
 }
-

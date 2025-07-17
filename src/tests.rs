@@ -83,10 +83,7 @@ mod tests {
             new_moisture > initial_moisture,
             "Watering should increase soil moisture."
         );
-        assert!(
-            new_moisture <= 1.0,
-            "Soil moisture should not exceed 1.0."
-        );
+        assert!(new_moisture <= 1.0, "Soil moisture should not exceed 1.0.");
     }
 
     #[test]

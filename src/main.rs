@@ -8,8 +8,8 @@ mod garden;
 mod pests;
 mod plant;
 mod saveload;
-mod tui;
 mod tests;
+mod tui;
 mod weather;
 
 fn main() {
@@ -23,7 +23,8 @@ fn main() {
         // The Save command from `main` branch loads the default game, saves it to a new file, and exits.
         cli::Commands::Save { filename } => {
             // First, get the current game state to save. We load the default save file, or create a new game if none exists.
-            let game_state = saveload::load_game("default_save.json").unwrap_or_else(|_| engine::new_game());
+            let game_state =
+                saveload::load_game("default_save.json").unwrap_or_else(|_| engine::new_game());
             // Then, perform the save operation.
             saveload::save_game(&game_state, filename).unwrap();
             println!("Game saved to {}", filename);
@@ -97,10 +98,18 @@ fn handle_command(command: cli::Commands, game_state: &mut garden::MainGameState
         }
         cli::Commands::Water { x, y } => {
             if let Some(plot) = game_state.plots.get_mut(&(0, 0)) {
-                if let Some(tile) = plot.grid.tiles.get_mut(y as usize).and_then(|row| row.get_mut(x as usize)) {
+                if let Some(tile) = plot
+                    .grid
+                    .tiles
+                    .get_mut(y as usize)
+                    .and_then(|row| row.get_mut(x as usize))
+                {
                     tile.soil.soil_moisture += 0.2;
                     tile.soil.soil_moisture = tile.soil.soil_moisture.clamp(0.0, 1.0);
-                    println!("Watered tile ({}, {}). New moisture: {}", x, y, tile.soil.soil_moisture);
+                    println!(
+                        "Watered tile ({}, {}). New moisture: {}",
+                        x, y, tile.soil.soil_moisture
+                    );
                 } else {
                     println!("Invalid coordinates: ({}, {})", x, y);
                 }
@@ -108,9 +117,15 @@ fn handle_command(command: cli::Commands, game_state: &mut garden::MainGameState
         }
         cli::Commands::Fertilize { x, y, npk_mix } => {
             if let Some(plot) = game_state.plots.get_mut(&(0, 0)) {
-                if let Some(tile) = plot.grid.tiles.get_mut(y as usize).and_then(|row| row.get_mut(x as usize)) {
+                if let Some(tile) = plot
+                    .grid
+                    .tiles
+                    .get_mut(y as usize)
+                    .and_then(|row| row.get_mut(x as usize))
+                {
                     // For simplicity, we'll parse a string like "0.1,0.1,0.1" for NPK values
-                    let parts: Vec<Result<f32, _>> = npk_mix.split(',').map(|s| s.trim().parse()).collect();
+                    let parts: Vec<Result<f32, _>> =
+                        npk_mix.split(',').map(|s| s.trim().parse()).collect();
                     if parts.len() == 3 && parts.iter().all(|p| p.is_ok()) {
                         let n = parts[0].as_ref().unwrap();
                         let p = parts[1].as_ref().unwrap();
@@ -121,9 +136,12 @@ fn handle_command(command: cli::Commands, game_state: &mut garden::MainGameState
                         tile.soil.soil_nutrients.potassium += k;
 
                         // Clamp nutrient values
-                        tile.soil.soil_nutrients.nitrogen = tile.soil.soil_nutrients.nitrogen.clamp(0.0, 1.0);
-                        tile.soil.soil_nutrients.phosphorus = tile.soil.soil_nutrients.phosphorus.clamp(0.0, 1.0);
-                        tile.soil.soil_nutrients.potassium = tile.soil.soil_nutrients.potassium.clamp(0.0, 1.0);
+                        tile.soil.soil_nutrients.nitrogen =
+                            tile.soil.soil_nutrients.nitrogen.clamp(0.0, 1.0);
+                        tile.soil.soil_nutrients.phosphorus =
+                            tile.soil.soil_nutrients.phosphorus.clamp(0.0, 1.0);
+                        tile.soil.soil_nutrients.potassium =
+                            tile.soil.soil_nutrients.potassium.clamp(0.0, 1.0);
 
                         println!("Fertilized tile ({}, {}).", x, y);
                     } else {

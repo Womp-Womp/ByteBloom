@@ -19,7 +19,7 @@ pub fn load_game(filename: &str) -> std::io::Result<garden::MainGameState> {
 #[cfg(test)]
 mod tests {
     use crate::engine;
-    use crate::saveload::{save_game, load_game};
+    use crate::saveload::{load_game, save_game};
 
     #[test]
     fn test_save_and_load() {
