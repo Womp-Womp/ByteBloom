@@ -13,6 +13,16 @@ pub struct Args {
 pub enum Commands {
     /// Starts a new game
     New,
+    /// Saves the game state
+    Save {
+        /// The filename to save the game to
+        filename: String,
+    },
+    /// Loads the game state
+    Load {
+        /// The filename to load the game from
+        filename: String,
+    },
     /// Views the garden
     View {
         #[clap(long)]
