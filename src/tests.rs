@@ -2,6 +2,7 @@
 mod tests {
     use crate::engine::{new_game, plant_seed, run_game_tick};
     use crate::garden::{Grid, MainGameState, Nutrients, Soil, SoilType, Tile};
+    use crate::plant::LifeCycleStage;
 
     fn setup_test_game() -> MainGameState {
         let mut game = new_game();
@@ -51,7 +52,7 @@ mod tests {
             .age;
         assert_eq!(initial_age, 0, "Plant should have an initial age of 0.");
 
-        run_game_tick(&mut game);
+        run_game_tick(&mut game, None);
 
         let new_age = game.plots[&(0, 0)].grid.tiles[0][0]
             .plant
@@ -131,7 +132,7 @@ mod tests {
             }
         }
 
-        run_game_tick(&mut game);
+        run_game_tick(&mut game, None);
 
         let new_age = game.plots[&(0, 0)].grid.tiles[0][0]
             .plant
@@ -142,5 +143,98 @@ mod tests {
             new_age, 0,
             "Plant should not age as fast under non-ideal moisture conditions."
         );
+    }
+
+    #[test]
+    fn test_plant_life_cycle() {
+        let mut game = setup_test_game();
+        plant_seed(&mut game, 0, 0, "tomato");
+        game.current_weather = crate::weather::Weather::Sunny;
+
+        // Check initial state
+        let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
+        assert_eq!(plant.life_cycle_stage, LifeCycleStage::Seed);
+
+        // Grow to Sprout
+        run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+        let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
+        assert_eq!(plant.life_cycle_stage, LifeCycleStage::Sprout);
+
+        // Grow to Growing
+        for _ in 0..4 {
+            if let Some(plot) = game.plots.get_mut(&(0, 0)) {
+                if let Some(tile) = plot.grid.tiles.get_mut(0).and_then(|row| row.get_mut(0)) {
+                    tile.soil.soil_moisture = 0.5;
+                }
+            }
+            run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+        }
+        let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
+        assert_eq!(plant.life_cycle_stage, LifeCycleStage::Growing);
+
+        // Grow to Mature
+        for _ in 0..5 {
+            if let Some(plot) = game.plots.get_mut(&(0, 0)) {
+                if let Some(tile) = plot.grid.tiles.get_mut(0).and_then(|row| row.get_mut(0)) {
+                    tile.soil.soil_moisture = 0.5;
+                }
+            }
+            run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+        }
+        let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
+        assert_eq!(plant.life_cycle_stage, LifeCycleStage::Mature);
+
+        // Grow to Withering
+        for _ in 0..5 {
+            if let Some(plot) = game.plots.get_mut(&(0, 0)) {
+                if let Some(tile) = plot.grid.tiles.get_mut(0).and_then(|row| row.get_mut(0)) {
+                    tile.soil.soil_moisture = 0.5;
+                }
+            }
+            run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+        }
+        let plant = game.plots[&(0, 0)].grid.tiles[0][0].plant.as_ref().unwrap();
+        assert_eq!(plant.life_cycle_stage, LifeCycleStage::Withering);
+    }
+
+    #[test]
+    fn test_plant_growth_heatwave() {
+        let mut game = setup_test_game();
+        plant_seed(&mut game, 0, 0, "tomato");
+
+        // Set weather to heatwave
+        game.current_weather = crate::weather::Weather::Heatwave;
+
+        run_game_tick(&mut game, Some(crate::weather::Weather::Heatwave));
+
+        let new_age = game.plots[&(0, 0)].grid.tiles[0][0]
+            .plant
+            .as_ref()
+            .unwrap()
+            .age;
+        assert_eq!(
+            new_age, 0,
+            "Plant should not grow as fast during a heatwave."
+        );
+    }
+
+    #[test]
+    fn test_harvest() {
+        let mut game = setup_test_game();
+        plant_seed(&mut game, 0, 0, "tomato");
+
+        // Grow plant to maturity
+        for _ in 0..15 {
+            run_game_tick(&mut game, Some(crate::weather::Weather::Sunny));
+        }
+
+        // Harvest the plant
+        crate::engine::harvest(&mut game, 0, 0);
+
+        // Check that the plant is removed
+        assert!(game.plots[&(0, 0)].grid.tiles[0][0].plant.is_none());
+
+        // Check that the inventory has been updated
+        assert!(game.inventory.get("tomato").unwrap() > &0);
     }
 }
